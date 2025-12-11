@@ -1,488 +1,438 @@
 # Code Style Guide
 
-This document defines the code style and conventions for the Tri-Language Notepad project.
+This document defines the coding standards and conventions for the Notepad project across all three language implementations (Go, Rust, C).
 
 ## General Principles
 
-1. **Readability First**: Code is read more often than written
-2. **Consistency**: Keep code consistent across the project
-3. **Clarity**: Explicit is better than implicit
-4. **Simplicity**: Keep it simple and straightforward
-5. **Performance**: Don't sacrifice readability for micro-optimizations
+1. **Readability First**: Code is read far more often than it's written. Optimize for clarity over cleverness.
+2. **Consistency**: Follow the established conventions within each language. Consistency is more important than perfection.
+3. **Self-Documenting**: Code should be understandable without extensive comments. Use clear variable/function names.
+4. **Performance**: Don't optimize prematurely, but write code that's inherently efficient. Use language idioms.
 
----
+## Naming Conventions
 
-## Cross-Language Standards
+### Variables and Constants
 
-### Naming Conventions
+**Go:**
+- Variables: `camelCase` (e.g., `bufferSize`, `isActive`)
+- Constants: `UPPERCASE_SNAKE_CASE` (e.g., `MAX_BUFFER_SIZE`, `DEFAULT_TIMEOUT`)
+- Global exported: `PascalCase` (e.g., `ConfigPath`, `ErrorHandler`)
+- Unexported: `camelCase` starting with lowercase
 
-#### Variables & Constants
-- **Variables**: `camelCase` (Go, Rust, C)
-  ```
-  Good: currentPosition, fileHandle, bufferSize
-  Bad: current_position, CurrentPosition, CURRENT_POSITION
-  ```
+**Rust:**
+- Variables: `snake_case` (e.g., `buffer_size`, `is_active`)
+- Constants: `UPPERCASE_SNAKE_CASE` (e.g., `MAX_BUFFER_SIZE`)
+- Type names: `PascalCase` (structs, enums, traits)
+- Module names: `snake_case`
+- Enum variants: `PascalCase`
 
-- **Constants**: `UPPER_SNAKE_CASE`
-  ```
-  Good: MAX_BUFFER_SIZE, DEFAULT_TIMEOUT
-  Bad: MaxBufferSize, max_buffer_size
-  ```
+**C:**
+- Variables: `snake_case` (e.g., `buffer_size`, `is_active`)
+- Constants: `UPPERCASE_SNAKE_CASE` (e.g., `MAX_BUFFER_SIZE`)
+- Type names (typedef): `PascalCase` or `snake_case_t` (e.g., `FileBuffer_t`)
+- Function names: `snake_case` with module prefix (e.g., `buffer_init`, `buffer_read`)
+- Macro names: `UPPERCASE_SNAKE_CASE`
 
-- **Functions**: `camelCase` (Go, Rust) or `snake_case` (C)
-  ```
-  Go/Rust: insertText(), deleteContent()
-  C: insert_text(), delete_content()
-  ```
+### Function/Method Names
 
-- **Classes/Structs**: `PascalCase`
-  ```
-  Good: TextBuffer, FileManager, EditorEngine
-  Bad: textBuffer, text_buffer, TEXTBUFFER
-  ```
+**Go:**
+- Exported: `PascalCase` (e.g., `OpenFile`, `ReadBuffer`)
+- Unexported: `camelCase` (e.g., `openFile`, `readBuffer`)
+- Getter methods: `Name()` not `GetName()`
+- Setter methods: `SetName()` format
 
-#### Abbreviations
-- Avoid cryptic abbreviations
-- Use full words when possible
+**Rust:**
+- Methods/functions: `snake_case` (e.g., `open_file`, `read_buffer`)
+- Trait methods: `snake_case`
+- Factory functions: `new()`, `with_capacity()`, etc.
+
+**C:**
+- Format: `module_action` (e.g., `file_open`, `buffer_read`)
+- Init functions: `module_init`
+- Cleanup functions: `module_cleanup` or `module_free`
+
+### Struct/Type Names
+
+All languages use **PascalCase** for type definitions:
+- Go: `type FileBuffer struct { ... }`
+- Rust: `struct FileBuffer { ... }`
+- C: `typedef struct { ... } FileBuffer_t;`
+
+## Line Length
+
+- **Hard limit**: 120 characters
+- **Soft limit**: 100 characters (preferred for readability)
+- **Exception**: Long URLs, error messages, or imports that cannot be broken
+- **Rationale**: Fits standard terminal widths, works on 13" laptops, readable without horizontal scrolling
+
+## Indentation
+
+- **Go**: Tabs (enforced by `gofmt`)
+- **Rust**: 4 spaces (enforced by `rustfmt`)
+- **C**: 4 spaces (enforced by `clang-format`)
+- **All files**: LF line endings (enforced by pre-commit hooks)
+
+## Commenting
+
+### Comment Types
+
+1. **Package/Module Comments** (appear at top of file):
+   - One-line summary describing the file's purpose
+   - Should explain what the package/module does, not how
+   - Example: `// Package buffer provides buffered file I/O operations.`
+
+2. **Function/Method Comments** (appear before declaration):
+   - Required for all public functions
+   - Format: `// FunctionName [parameters] returns [results], describing behavior.`
+   - Should explain the *what* and *why*, not the *how*
+   - Include error conditions and edge cases
+
+3. **Inline Comments** (within code blocks):
+   - Explain *why* code does something, not *what*
+   - Keep to one or two lines
+   - Don't state the obvious (`x++  // increment x`)
+
+4. **Type Comments** (before struct/interface/type definitions):
+   - Brief description of what the type represents
+   - List invariants if non-obvious
+
+### Bad vs. Good Comments
+
+**Bad:**
 ```
-Good: currentIndex, documentTitle, fileSystemPath
-Bad: curIdx, docTtl, fsp
-```
-
-### Line Length
-
-- **Soft limit**: 80 characters (warnings)
-- **Hard limit**: 120 characters (must break)
-- **Exception**: URLs and long strings can exceed
-
-### Indentation
-
-- **Go**: Tabs (per Go convention)
-- **Rust**: 4 spaces
-- **C**: 4 spaces
-- Use EditorConfig for automatic enforcement
-
-### Comments
-
-#### Comment Placement
-```
-// Place comments above the code they describe
-// Use complete sentences with proper capitalization
-
-function insert(text: String) {
-    // Remove leading/trailing whitespace before inserting
-    let trimmed = text.trim()
-    buffer.append(trimmed)
+x := 0  // set x to 0
+i++     // increment i
+if err != nil {  // check if error exists
+    return err
 }
 ```
 
-#### Good Comments
-- Explain **why**, not **what**
-- Clarify non-obvious logic
-- Reference external sources
-- Mark incomplete code with TODO/FIXME
-
-```go
-// FIXME: This algorithm is O(n²), optimize for large buffers
-// See: https://en.wikipedia.org/wiki/Boyer-Moore_algorithm
-
-// Insert with position validation to prevent out-of-bounds access
-editor.Insert(position, text)
+**Good:**
 ```
+// Initialize attempt counter for connection retries
+attempts := 0
 
-#### Bad Comments
-- Stating the obvious
-- Incorrect information
-- Obsolete comments
+// Retry loop exits when connection succeeds or max attempts reached
+for attempts < maxRetries {
+    attempts++
+}
 
-```go
-// Bad: This doesn't add value
-i++ // Increment i
-
-// Bad: Misleading comment
-// This function is very fast
-// (Function is actually slow)
-```
-
-#### Documentation Comments
-
-**Go**:
-```go
-// Insert adds text at the specified position in the buffer.
-// It returns an error if the position is out of bounds.
-// This operation can be undone with the Undo function.
-func (e *Editor) Insert(pos int, text string) error {
-```
-
-**Rust**:
-```rust
-/// Inserts text at the specified position in the buffer.
-///
-/// # Arguments
-/// * `pos` - The position where text will be inserted
-/// * `text` - The text to insert
-///
-/// # Returns
-/// Returns `Ok(())` on success, `Err(EditorError)` on failure
-///
-/// # Example
-/// ```
-/// let mut editor = Editor::new();
-/// editor.insert(0, "Hello")?;
-/// ```
-pub fn insert(&mut self, pos: usize, text: &str) -> Result<(), EditorError> {
-```
-
-**C**:
-```c
-/**
- * Inserts text at the specified position in the buffer.
- *
- * @param editor The editor instance
- * @param pos The position where text will be inserted
- * @param text The text to insert
- * @return 0 on success, -1 on error
- */
-int editor_insert(Editor *editor, int pos, const char *text);
-```
-
----
-
-## Go Style Guide
-
-### File Organization
-```go
-// 1. Package declaration
-package editor
-
-// 2. Imports (standard library, then third-party)
-import (
-    "fmt"
-    "io"
-    
-    "github.com/pkg/errors"
-)
-
-// 3. Constants
-const DefaultBufferSize = 1024
-
-// 4. Variables
-var globalRegistry *Registry
-
-// 5. Interfaces
-type Reader interface { }
-
-// 6. Structs
-type Editor struct { }
-
-// 7. Methods and functions
-func (e *Editor) Insert(text string) error { }
-
-func NewEditor() *Editor { }
-```
-
-### Naming
-```go
-// Exported: Capitalize first letter
-type Editor struct { }
-func (e *Editor) Insert(text string) error { }
-
-// Unexported: lowercase
-type buffer struct { }
-func (b *buffer) write(text string) { }
-```
-
-### Error Handling
-```go
-// Good: Check errors immediately
+// Return error immediately; caller must log and clean up resources
 if err != nil {
-    return fmt.Errorf("failed to insert text: %w", err)
-}
-
-// Good: Wrap errors with context
-file, err := os.Open(path)
-if err != nil {
-    return nil, errors.Wrap(err, "could not open file")
+    return err
 }
 ```
 
-### Function Length
-- Keep functions under 50 lines (aim for 20-30)
-- Extract complex logic into helper functions
-- One responsibility per function
+## Block Structure
+
+- One blank line between function/method definitions
+- One blank line between logical sections within functions
+- No blank lines at start or end of blocks
+- Group related declarations together
+
+## Imports
+
+- **Go**: Use `goimports` to organize (standard library, third-party, local)
+- **Rust**: Organized by type (self, crate, external)
+- **C**: System includes in `<>`, local includes in `""`
+- Keep imports sorted alphabetically within each group
 
 ---
 
-## Rust Style Guide
+## Language-Specific Conventions
 
-### File Organization
-```rust
-// 1. Module declarations
-mod editor;
+### Go Style
 
-// 2. Imports
-use std::fs;
-use crate::models::Document;
-
-// 3. Constants
-const DEFAULT_BUFFER_SIZE: usize = 1024;
-
-// 4. Structs and Traits
-pub struct Editor { }
-pub trait Editable { }
-
-// 5. Implementations
-impl Editor { }
-impl Editable for Editor { }
-
-// 6. Functions
-pub fn create_editor() -> Editor { }
+**File Organization:**
+```
+1. Package declaration
+2. Comment describing package purpose (if needed)
+3. Import declarations
+4. Type declarations
+5. Constant declarations
+6. Variable declarations
+7. Function declarations (exported first, then unexported)
 ```
 
-### Naming
-```rust
-// Types: PascalCase
-pub struct TextBuffer { }
-pub enum EditorError { }
+**Naming Conventions:**
+- Interfaces: `Reader`, `Writer`, `Handler` (often one-word or Agent noun)
+- Getter: `Name()` not `GetName()`
+- Setter: `SetName()` for mutable receivers
+- Receiver variables: Use two-letter abbreviation (`b` for buffer, `f` for file)
 
-// Functions/variables: snake_case
-pub fn insert_text(text: &str) { }
-let current_position = 0;
+**Error Handling:**
+- Always check `err != nil` immediately after operation
+- Use sentinel errors for expected failures: `var ErrNotFound = errors.New("not found")`
+- Wrap errors with context: `fmt.Errorf("failed to read config: %w", err)`
+- Don't create unnecessary error types; use concrete types when context matters
 
-// Constants: SCREAMING_SNAKE_CASE
-const MAX_BUFFER_SIZE: usize = 1_048_576;
+**Function Length:**
+- Prefer small functions (< 50 lines)
+- If > 100 lines, consider splitting into smaller functions
+- Exception: Generated code or very specific algorithms
+
+**Defer Usage:**
+- Use `defer` for resource cleanup (files, locks, transactions)
+- Place defer immediately after acquiring resource
+- Order matters: last deferred executes first (LIFO)
+
+**Interfaces:**
+- Keep interfaces small (1-3 methods)
+- Use interface{} sparingly; prefer concrete types or constraints (Go 1.18+)
+- Name interfaces with `-er` suffix when possible
+
+### Rust Style
+
+**File Organization:**
+```
+1. Module declarations
+2. Use statements (imports)
+3. Type definitions (structs, enums, traits)
+4. Trait implementations
+5. Function implementations
+6. Module definitions (if using inline modules)
 ```
 
-### Error Handling
-```rust
-// Good: Use Result types
-pub fn insert(&mut self, text: &str) -> Result<(), EditorError> {
-    if text.is_empty() {
-        return Err(EditorError::EmptyText);
-    }
-    Ok(())
-}
+**Naming Conventions:**
+- `Self::Associated` for associated functions and constants
+- Use type aliases for commonly repeated types
+- Test modules: `#[cfg(test)] mod tests { ... }`
 
-// Good: Use ? operator
-fn process_file(path: &str) -> Result<Content, FileError> {
-    let content = std::fs::read_to_string(path)?;
-    Ok(content)
-}
+**Error Handling:**
+- Prefer `Result<T, E>` over panics in library code
+- Use `?` operator for error propagation
+- Create custom error types with `thiserror` or `anyhow`
+- Example: `pub fn read_file(path: &str) -> Result<String, IoError>`
+
+**Lifetimes:**
+- Use explicit lifetimes in public APIs for clarity
+- Avoid lifetime elision in complex scenarios
+- Document lifetime relationships in comments when non-obvious
+- Use `&'static` sparingly; prefer borrowed references
+
+**Borrowing:**
+- Prefer `&T` over `Box<T>` for parameters
+- Use `&mut T` only when mutation is necessary
+- Avoid `clone()` unless semantically appropriate
+- Implement `Copy` for small value types
+
+**Pattern Matching:**
+- Use `match` for exhaustive checking
+- Use `if let` for single pattern cases
+- Avoid nested patterns; extract into helper functions
+- Match on references: `match &value { ... }` to avoid moves
+
+**Testing:**
+- Tests in same file, `#[cfg(test)]` module at bottom
+- Use descriptive test names: `test_parse_valid_config`, not `test1`
+- Use `assert_eq!`, `assert!` for clarity
+- Test both success and failure paths
+
+### C Style
+
+**File Organization:**
+```
+1. Include guards (or #pragma once)
+2. System includes (<stdio.h>, etc.)
+3. Local includes ("module.h", etc.)
+4. Type definitions and macros
+5. Forward declarations
+6. Function declarations
+7. Function implementations (in .c files)
 ```
 
-### Lifetimes
-```rust
-// Explicit when needed
-fn find<'a>(haystack: &'a str, needle: &str) -> Option<&'a str>
+**Naming Conventions:**
+- Function prefix with module name: `buffer_init`, `file_open`
+- Static functions (file-scope): `static int process_data(...)`
+- Typedef structs: `typedef struct { ... } Name_t;`
+- Macros: `UPPERCASE_SNAKE_CASE`
 
-// Avoid unnecessary lifetime parameters
-// Bad: fn insert<'a>(&'a mut self, text: &'a str)
-// Good:
-fn insert(&mut self, text: &str)
-```
+**Memory Management:**
+- Always pair `malloc` with `free`
+- Initialize pointers: `int *ptr = NULL;` (not uninitialized)
+- Check allocation: `if (ptr == NULL) { return NULL; }`
+- Use `calloc` when zero-initialization needed
+- Document ownership: who allocates, who frees?
+- Consider fixed-size buffers over dynamic allocation when bounds known
 
----
+**Error Handling:**
+- Return error codes (not exceptions): `0` for success, non-zero for errors
+- Use `errno` for system call failures
+- Define error codes: `#define ERR_OPEN_FAILED -1`
+- Early returns: `if (condition) { cleanup(); return error; }`
 
-## C Style Guide
+**Function Length:**
+- Keep functions under 75 lines
+- If > 100 lines, split into smaller functions
+- Helper functions can be static in same file
 
-### File Organization
+**Pointer Usage:**
+- Declare with type: `int *ptr;` not `int* ptr;`
+- Check for NULL after allocation and dereferencing
+- Use `const` pointers when appropriate: `const char *str`
+- Document pointer lifetime in comments
 
-**Header files** (.h):
-```c
-// 1. Include guards
-#ifndef EDITOR_H
-#define EDITOR_H
-
-// 2. Includes
-#include <stdio.h>
-#include "buffer.h"
-
-// 3. Constants
-#define MAX_BUFFER_SIZE 1024
-
-// 4. Type definitions
-typedef struct {
-    char *content;
-    int length;
-} Editor;
-
-// 5. Function declarations
-int editor_insert(Editor *e, const char *text);
-int editor_delete(Editor *e, int start, int end);
-
-#endif // EDITOR_H
-```
-
-**Implementation files** (.c):
-```c
-// 1. Includes
-#include "editor.h"
-#include <stdlib.h>
-
-// 2. Static constants and variables
-static const int INITIAL_CAPACITY = 256;
-
-// 3. Static helper functions
-static int capacity_for_length(int len) {
-    // ...
-}
-
-// 4. Public function implementations
-int editor_insert(Editor *e, const char *text) {
-    // ...
-}
-```
-
-### Naming
-```c
-// Functions: snake_case with module prefix
-editor_insert()
-editor_delete()
-file_open()
-file_save()
-
-// Structs: snake_case
-struct text_buffer { }
-
-// Constants: SCREAMING_SNAKE_CASE
-#define MAX_LINE_LENGTH 120
-#define DEFAULT_TAB_WIDTH 4
-```
-
-### Memory Management
-```c
-// Good: Check allocation
-Editor *e = malloc(sizeof(Editor));
-if (e == NULL) {
-    return NULL; // or appropriate error
-}
-
-// Good: Clean up
-free(e->content);
-free(e);
-e = NULL; // Avoid use-after-free
-
-// Good: Use size safely
-int size = strlen(text) + 1;
-char *copy = malloc(size);
-if (!copy) { /* handle error */ }
-strncpy(copy, text, size - 1);
-copy[size - 1] = '\0';
-```
-
-### Error Handling
-```c
-// Good: Return error codes
-int editor_insert(Editor *e, const char *text) {
-    if (e == NULL || text == NULL) {
-        return -1; // Invalid argument
-    }
-    if (strlen(text) > MAX_TEXT_LENGTH) {
-        return -2; // Text too long
-    }
-    // ... implementation
-    return 0; // Success
-}
-```
-
----
-
-## Formatting & Tools
-
-### Automated Formatting
-
-All code MUST pass automated formatting:
-
-**Go**:
-```bash
-go fmt ./...
-goimports -w .
-```
-
-**Rust**:
-```bash
-cargo fmt
-```
-
-**C**:
-```bash
-clang-format -i src/*.{c,h}
-```
-
-### Pre-commit Hooks
-
-Formatting checks run automatically before commits. To run manually:
-
-```bash
-pre-commit run --all-files
-```
+**Macros:**
+- Use `#define` for constants only when necessary
+- Prefer `enum` for related constants
+- Wrap arguments in parentheses: `#define MAX(a,b) ((a) > (b) ? (a) : (b))`
+- Document purpose and usage
 
 ---
 
 ## Complexity Limits
 
 ### Cyclomatic Complexity
-- **Max**: 10 per function
-- **Target**: <5 average
-- **Tool**: Linters check automatically
+- **Soft limit**: 10 per function
+- **Hard limit**: 20 per function (should be refactored)
+- Measured as number of independent paths through code
+- Tools: `gocyclo` (Go), `mccabe` (Rust/C)
 
 ### Function Length
-- **Max**: 100 lines
-- **Target**: 20-50 lines
-- Extract complex logic into helpers
+- **Go**: < 50 lines preferred, max 100 lines
+- **Rust**: < 50 lines preferred, max 100 lines
+- **C**: < 75 lines preferred, max 100 lines
+- Helpers and one-liners exempt from length limits
 
 ### File Size
-- **Max**: 500 lines
-- **Target**: 200-300 lines
-- Split into multiple files when needed
+- **Go**: < 500 lines preferred, max 1000 lines
+- **Rust**: < 400 lines preferred, max 800 lines
+- **C Header**: < 200 lines preferred, max 300 lines
+- **C Implementation**: < 500 lines preferred, max 1000 lines
+
+### Nesting Depth
+- **Hard limit**: 4 levels
+- **Soft limit**: 3 levels
+- Use early returns to reduce nesting
+- Extract nested logic into helper functions
 
 ---
 
 ## Testing Style
 
 ### Test Naming
+- **Go**: `TestFunctionName`, `TestFunctionName_ScenarioDescription`
+- **Rust**: `#[test] fn test_function_name() { ... }`
+- **C**: `void test_function_name(void) { ... }`
+
+### Test Organization
+- One test per behavior/condition
+- Arrange-Act-Assert (AAA) pattern:
+  ```
+  // Arrange: set up test data
+  // Act: execute function
+  // Assert: verify results
+  ```
+
+### Test Coverage
+- Minimum: 80% code coverage
+- Target: 90% for critical modules
+- Exclude: boilerplate, error cases in main/init
+- Tools: Go `testing` package, Rust `cargo tarpaulin`, C `gcov`
+
+### Table-Driven Tests
+**Go:**
 ```go
-// Go: TestFunctionName_Scenario
-func TestInsert_ValidText(t *testing.T) { }
-func TestInsert_EmptyText(t *testing.T) { }
-func TestInsert_OutOfBounds(t *testing.T) { }
+tests := []struct {
+    name    string
+    input   string
+    want    string
+    wantErr bool
+}{
+    {"valid input", "test", "result", false},
+    {"empty input", "", "", true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        // test logic
+    })
+}
 ```
 
+**Rust:**
 ```rust
-// Rust: test_function_name_scenario
 #[test]
-fn test_insert_valid_text() { }
-fn test_insert_empty_text() { }
-fn test_insert_out_of_bounds() { }
+fn test_cases() {
+    let cases = vec![
+        ("input", "output"),
+    ];
+    for (input, expected) in cases {
+        assert_eq!(process(input), expected);
+    }
+}
 ```
 
-### Test Structure (AAA)
+### Assertion Style
+- Be specific: `assert_eq!(actual, expected)` not `assert!(x == y)`
+- Include messages for complex assertions
+- One assertion per test when possible
+
+---
+
+## Documentation Requirements
+
+### Required Documentation
+1. **All public functions/methods**: Must have documentation comment
+2. **All exported types**: Must have documentation comment
+3. **All modules/packages**: Must have documentation comment
+4. **Complex algorithms**: Explain approach and time/space complexity
+5. **Edge cases**: Document limitations and error conditions
+
+### Documentation Format
+
+**Go (doc comments):**
+```go
+// Buffer provides buffered read/write operations on files.
+type Buffer struct { ... }
+
+// Read returns the next n bytes from the buffer.
+// If EOF is reached, returns data read and io.EOF.
+func (b *Buffer) Read(n int) ([]byte, error) { ... }
 ```
-Arrange: Set up test data
-Act: Execute the function
-Assert: Verify the results
+
+**Rust (doc comments):**
+```rust
+/// Buffer provides buffered read/write operations on files.
+pub struct Buffer { ... }
+
+/// Returns the next n bytes from the buffer.
+///
+/// # Errors
+/// Returns `IoError` if the underlying file cannot be read.
+pub fn read(&mut self, n: usize) -> Result<Vec<u8>, IoError> { ... }
+```
+
+**C (header comments):**
+```c
+/**
+ * Buffer provides buffered read/write operations on files.
+ */
+typedef struct { ... } Buffer_t;
+
+/**
+ * Reads up to n bytes from the buffer.
+ * @param buf The buffer to read from
+ * @param n Number of bytes to read
+ * @return Number of bytes read, or -1 on error
+ */
+int buffer_read(Buffer_t *buf, size_t n);
 ```
 
 ---
 
-## Performance Considerations
+## Code Review Checklist
 
-1. **Premature Optimization**: Don't optimize without evidence
-2. **Benchmarking**: Measure before and after changes
-3. **Profiling**: Use language tools to find bottlenecks
-4. **Complexity**: Use appropriate algorithms and data structures
+Before submitting code for review, verify:
 
----
-
-## Documentation Checklist
-
-- [ ] All public functions have doc comments
-- [ ] Complex logic has inline comments explaining "why"
-- [ ] Examples provided for non-obvious APIs
-- [ ] Parameters and return values documented
-- [ ] Error conditions documented
-- [ ] Performance characteristics noted (if relevant)
-
----
-
-**Last Updated**: December 11, 2025
+- [ ] **Naming**: All variables, functions, types follow conventions
+- [ ] **Line Length**: No lines exceed 120 characters
+- [ ] **Indentation**: Consistent with language standard (tabs/spaces/LF)
+- [ ] **Comments**: Public APIs documented, inline comments explain *why*
+- [ ] **Complexity**: Cyclomatic complexity < 10, functions < 100 lines
+- [ ] **Error Handling**: All error paths covered and tested
+- [ ] **Testing**: Tests written, 80%+ coverage achieved
+- [ ] **Formatting**: Runs through language formatter without changes
+- [ ] **Imports**: Organized and no unused imports
+- [ ] **Performance**: No obvious inefficiencies or N² algorithms
+- [ ] **Security**: No hardcoded secrets, safe input validation
+- [ ] **Documentation**: All public APIs documented with examples
